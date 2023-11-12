@@ -13,18 +13,28 @@ namespace TP_Socket
         private string texteRec = "";
         private string texteMessage = "";
         private TextBox textBoxReception;
-
-
+        private IPEndPoint destinationEndPoint;
+        private IPEndPoint receptionEndPoint;
 
         public Form1()
         {
             InitializeComponent();
         }
 
+
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+
+            destinationEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+            receptionEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 80);
+
+            Timer dataCheckTimer = new Timer();
+            dataCheckTimer.Interval = 1000; 
+            dataCheckTimer.Tick += DataCheckTimer_Tick;
+            dataCheckTimer.Start();
         }
+
+
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -54,6 +64,8 @@ namespace TP_Socket
             }
         }
 
+
+
         private void button2_Click(object sender, EventArgs e)
         {
             try
@@ -77,6 +89,9 @@ namespace TP_Socket
                 MessageBox.Show($"Erreur lors de l'envoi de données : {se.Message}", "Erreur d'envoi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+
+
 
         private void buttonRecevoir_Click(object sender, EventArgs e)
         {
@@ -113,6 +128,7 @@ namespace TP_Socket
 
 
 
+
         private void button4_Click(object sender, EventArgs e)
         {
             try
@@ -134,12 +150,19 @@ namespace TP_Socket
 
 
 
+
+
+
+
+
+
+
+
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-           
             texteEnv = textBox1.Text;
-
         }
+
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
             texteRec = textBox2.Text;
@@ -147,22 +170,40 @@ namespace TP_Socket
 
         private void label1_Click(object sender, EventArgs e)
         {
-
-        }
-        private void label2_Click(object sender, EventArgs e)
-        {
-
         }
 
-        private void label3_Click(object sender, EventArgs e)
-         {
-
-         }
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
             texteMessage = textBox3.Text;
         }
 
-        
+
+
+
+
+
+
+
+
+        private void DataCheckTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (socket != null && socket.Connected && socket.Available > 0)
+                {
+                    var messageRecu = new byte[1024];
+                    int nbcarrecu = socket.Receive(messageRecu);
+                    string texteRecu = Encoding.ASCII.GetString(messageRecu, 0, nbcarrecu);
+
+                    this.textBoxReception.Text = $"Nombre de caractères reçus : {nbcarrecu}\n{texteRecu}";
+                }
+            }
+            catch (SocketException se)
+            {
+                MessageBox.Show($"Erreur lors de la réception de données : {se.Message}", "Erreur de réception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+        }
     }
 }
+

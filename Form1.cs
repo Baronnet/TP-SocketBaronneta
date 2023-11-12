@@ -84,6 +84,8 @@ namespace TP_Socket
             {
                 if (socket != null && socket.Connected)
                 {
+                    socket.ReceiveTimeout = 10000;
+
                     var messageRecu = new byte[1024];
                     int nbcarrecu = socket.Receive(messageRecu);
                     string texteRecu = Encoding.ASCII.GetString(messageRecu, 0, nbcarrecu);
@@ -97,9 +99,19 @@ namespace TP_Socket
             }
             catch (SocketException se)
             {
-                MessageBox.Show($"Erreur lors de la réception de données : {se.Message}", "Erreur de réception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (se.SocketErrorCode == SocketError.TimedOut)
+                {
+                    MessageBox.Show("La réception a expiré. Aucune donnée reçue dans le délai imparti.", "Délai d'attente dépassé", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Erreur lors de la réception de données : {se.Message}", "Erreur de réception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
+
+
+
 
         private void button4_Click(object sender, EventArgs e)
         {
